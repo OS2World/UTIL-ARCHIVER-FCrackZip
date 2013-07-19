@@ -1,0 +1,58 @@
+AC_INIT(main.c)
+AM_INIT_AUTOMAKE(fcrackzip,0.2.4)
+
+AM_CONFIG_HEADER(config.h)
+
+AC_PROG_CC
+AC_HEADER_STDC
+
+AC_CHECK_SIZEOF(short, 2)
+AC_CHECK_SIZEOF(int,   4)
+AC_CHECK_SIZEOF(long,  4)
+
+AC_C_CONST
+AC_C_INLINE
+
+AC_CHECK_PROGS(PERL,perl5.00502 perl5.00501 perl5.00500 perl5.005 perl5.00404 perl5.004 perl5 perl)
+AM_CONDITIONAL(HAVE_PERL,test -n "$PERL")
+
+LIBOBJS=
+
+dnl configure depends on this, so we blindly define it anyways.
+AC_DEFINE(USE_UNIX_REDIRECTION)
+
+if test "$GCC" = yes; then
+   AC_DEFINE(USE_GCC_ASM)
+   AC_MSG_CHECKING(for pgcc/egcs)
+   case `$CC -v 2>&1` in
+      *pgcc-* )
+         AC_MSG_RESULT(pgcc)
+         ;;
+      *egcs-* )
+         AC_MSG_RESULT(egcs)
+         ;;
+   esac
+   AC_MSG_CHECKING(for x86 asm)
+   case `uname -m` in
+      i386 | i486 | i586 | ix86 | i86 )
+         AC_DEFINE(COMPILE_CPU,5)
+         AC_MSG_RESULT(pentium)
+         ;;
+      i686 | i786 )
+         AC_DEFINE(COMPILE_CPU,6)
+         AC_MSG_RESULT(pentiumpro)
+         ;;
+      *)
+         AC_MSG_RESULT(not x86)
+   esac
+else
+   AC_MSG_RESULT(no gcc)
+fi
+
+AC_SUBST(PERL)
+AC_SUBST(LIBOBJS)
+AC_CHECK_HEADERS(stdbool.h getopt.h unistd.h sys/time.h)
+AC_CHECK_FUNCS(gettimeofday)
+AC_CHECK_FUNCS(getopt_long,,[LIBOBJS="$LIBOBJS getopt.o getopt1.o"])
+
+AC_OUTPUT(Makefile)
